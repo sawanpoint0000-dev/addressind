@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>State Based Address Generator</title>
+
+<style>
+body{
+  background:#eef2f5;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+}
+.box{
+  background:#fff;
+  width:420px;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 12px rgba(0,0,0,.15);
+}
+h2{text-align:center}
+select,textarea,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+}
+textarea{
+  height:120px;
+  resize:none;
+}
+button{
+  background:#007bff;
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+<h2>Indian Address Generator</h2>
+
+<select id="state">
+  <option value="">Select State</option>
+  <option>Uttar Pradesh</option>
+  <option>Delhi</option>
+  <option>Maharashtra</option>
+  <option>Bihar</option>
+  <option>Rajasthan</option>
+  <option>West Bengal</option>
+  <option>Tamil Nadu</option>
+</select>
+
+<button onclick="generateAddress()">Generate Address</button>
+
+<textarea id="address" readonly placeholder="Generated Address"></textarea>
+<button onclick="copyAddress()">Copy Address</button>
+</div>
+
+<script>
+const streets=[
+  "Ashok Vihar","Gandhi Road","Shiv Nagar",
+  "Patel Nagar","Krishna Colony"
+];
+
+// State wise sample pincodes (India Post – valid)
+const statePins={
+  "Uttar Pradesh":["226010","201301","221002"],
+  "Delhi":["110001","110017","110092"],
+  "Maharashtra":["400001","411001","440001"],
+  "Bihar":["800001","823001","842001"],
+  "Rajasthan":["302001","342001","313001"],
+  "West Bengal":["700001","711101","734001"],
+  "Tamil Nadu":["600001","641001","625001"]
+};
+
+function generateAddress(){
+  const state=document.getElementById("state").value;
+  if(!state){
+    alert("State select karo");
+    return;
+  }
+
+  // random valid pincode of selected state
+  const pinList=statePins[state];
+  const pin=pinList[Math.floor(Math.random()*pinList.length)];
+
+  fetch("https://api.postalpincode.in/pincode/"+pin)
+  .then(r=>r.json())
+  .then(data=>{
+    if(data[0].Status!=="Success") return;
+
+    const po=data[0].PostOffice[0];
+    const house=Math.floor(Math.random()*500)+1;
+    const street=streets[Math.floor(Math.random()*streets.length)];
+
+    address.value=
+`House No. ${house}, ${street},
+${po.District}, ${po.State} - ${po.Pincode}, India`;
+  });
+}
+
+function copyAddress(){
+  address.select();
+  document.execCommand("copy");
+}
+</script>
+
+</body>
+</html>
